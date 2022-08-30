@@ -61,6 +61,9 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    MELTANO_PROJECT_ROOT: "/opt/meltano"
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 240
+
   volumes:
     - ${AIRFLOW_WORKSPACE}/dags:/opt/airflow/dags
     - ${AIRFLOW_WORKSPACE}/logs:/opt/airflow/logs
@@ -73,21 +76,41 @@ x-airflow-common:
       condition: service_healthy
     postgres:
       condition: service_healthy
+  networks:
+    - airflow
+
+x-meltano-image:
+  &meltano-image
+  image: ${MELTANO_IMAGE_NAME}
+  build:
+    context: ./meltano
+    args:
+      MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
+x-meltano-env:
+  &meltano-env
+  MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
+  MELTANO_ENVIRONMENT: ${MELTANO_ENV}
+  # Add any additional Meltano configuration environment variables here
 
 services:
   postgres:
     image: postgres:13
     environment:
+      POSTGRES_MULTIPLE_DATABASES: airflow,meltano
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: airflow
+
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+      - ./postgres-init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 5s
       retries: 5
     restart: always
+    networks:
+      - airflow
 
   redis:
     image: redis:latest
@@ -99,6 +122,8 @@ services:
       timeout: 30s
       retries: 50
     restart: always
+    networks:
+      - airflow
 
   airflow-webserver:
     <<: *airflow-common
@@ -272,6 +297,28 @@ services:
       - -c
       - airflow
 
+  meltano:
+    <<: *meltano-image
+    environment:
+      <<: *meltano-env
+    volumes:
+      - meltano_project_root:/project
+      - meltano_elt_logs_data:/project/.meltano/logs/elt
+      - ${MELTANO_PROJECT_ROOT}/meltano.yml:/project/meltano.yml
+      - ${MELTANO_PROJECT_ROOT}/.env:/project/.env
+    expose:
+      - 5000
+      - 22
+    ports:
+      - ${MELTANO_UI_PORT}:5000
+    depends_on:
+      - postgres
+    networks:
+      - airflow
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
   # See: https://docs.docker.com/compose/profiles/
@@ -293,5 +340,11 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+networks:
+  meltano:
+  airflow:
 volumes:
   postgres-db-volume:
+  meltano_elt_logs_data:
+    driver: local
+  meltano_project_root:
