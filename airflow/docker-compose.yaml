@@ -87,6 +87,7 @@ x-meltano-image:
     context: ../meltano
     args:
       MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
+      MELTANO_ENV: ${MELTANO_ENV}
 x-meltano-env:
   &meltano-env
   MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
