@@ -1,6 +1,6 @@
-# Modèle de déploiement Airflow pour Trackdéchets
+# Modèle de déploiement pour la Plateforme Données de Trackdéchets
 
-Ce repository contient les fichiers `Docker Compose` permettant un déploiement de Airflow.
+Ce repository contient les fichiers `Docker Compose` permettant un déploiement de Airflow et Meltano.
 Le déploiement en production utilise `nginx` comme proxy inversé permettant d'activer le HTTPS viaz un certificat auto-généré via `certbot`.
 
 
