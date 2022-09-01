@@ -33,4 +33,6 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh
 
 RUN echo "source /venv/bin/activate" >> ~/.bashrc
 
+RUN touch .env
+
 ENTRYPOINT service ssh restart && tail -f /dev/null
