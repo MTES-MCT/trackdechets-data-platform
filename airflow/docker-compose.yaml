@@ -83,7 +83,7 @@ x-meltano-image:
   &meltano-image
   image: ${MELTANO_IMAGE_NAME}
   build:
-    context: ./meltano
+    context: ../meltano
     args:
       MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
 x-meltano-env:
@@ -302,10 +302,10 @@ services:
     environment:
       <<: *meltano-env
     volumes:
-      - meltano_project_root:/project
-      - meltano_elt_logs_data:/project/.meltano/logs/elt
-      - ${MELTANO_PROJECT_ROOT}/meltano.yml:/project/meltano.yml
-      - ${MELTANO_PROJECT_ROOT}/.env:/project/.env
+      - meltano-project-root:/project
+      - meltano-elt-logs-data:/project/.meltano/logs/elt
+      - ${MELTANO_WORKSPACE}/meltano.yml:/project/meltano.yml
+      - ${MELTANO_WORKSPACE}/.env:/project/.env
     expose:
       - 5000
       - 22
@@ -345,6 +345,6 @@ networks:
   airflow:
 volumes:
   postgres-db-volume:
-  meltano_elt_logs_data:
+  meltano-elt-logs-data:
     driver: local
-  meltano_project_root:
+  meltano-project-root:
