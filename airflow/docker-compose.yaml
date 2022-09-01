@@ -83,6 +83,7 @@ x-meltano-image:
   &meltano-image
   image: ${MELTANO_IMAGE_NAME}
   build:
+    dockerfile: ../meltano/Dockerfile
     context: ../meltano
     args:
       MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
@@ -309,8 +310,6 @@ services:
     expose:
       - 5000
       - 22
-    ports:
-      - ${MELTANO_UI_PORT}:5000
     depends_on:
       - postgres
     networks:

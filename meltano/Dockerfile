@@ -33,4 +33,4 @@ RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/g' /etc/ssh
 
 RUN echo "source /venv/bin/activate" >> ~/.bashrc
 
-ENTRYPOINT service ssh restart && meltano ui
+ENTRYPOINT service ssh restart && tail -f /dev/null
