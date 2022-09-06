@@ -4,7 +4,8 @@ USER root
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     gcc \
-    build-essential
+    build-essential \
+    libpq-dev
 
 USER airflow
 

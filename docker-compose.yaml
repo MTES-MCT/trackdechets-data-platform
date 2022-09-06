@@ -46,7 +46,8 @@ x-airflow-common:
 
   #image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.3.2}
   &airflow-common
-  build: .
+  build:
+    context: ./airflow
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -84,10 +85,11 @@ x-meltano-image:
   image: ${MELTANO_IMAGE_NAME}
   build:
     dockerfile: ../meltano/Dockerfile
-    context: ../meltano
+    context: ./meltano
     args:
       MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
       MELTANO_ENV: ${MELTANO_ENV}
+
 x-meltano-env:
   &meltano-env
   MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
@@ -283,8 +285,6 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
-    volumes:
-      - .:/sources
 
   airflow-cli:
     <<: *airflow-common
@@ -306,8 +306,7 @@ services:
     volumes:
       - meltano-project-root:/project
       - meltano-elt-logs-data:/project/.meltano/logs/elt
-      - ${MELTANO_WORKSPACE}/meltano.yml:/project/meltano.yml
-      - ${MELTANO_WORKSPACE}/.env:/project/.env
+      - ${MELTANO_WORKSPACE}/:/project/
     expose:
       - 5000
       - 22

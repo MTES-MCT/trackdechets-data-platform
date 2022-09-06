@@ -11,9 +11,9 @@ Les fichiers présents ici permettent aussi de lancer l'instance Airflow en loca
 Docker est nécessaire pour lancer les différents containers.
 
 
-## Containers Airflow 
+## Plateforme données
 
-Pour lancer Airflow, il suffit d'utiliser la commande suivante:
+Pour lancer la plateforme données, il suffit d'utiliser la commande suivante:
 ```bash
 docker compose up
 ```
@@ -25,10 +25,13 @@ Pour cela il faut créer un fichier `.env` contenant les variables suivantes :
 - **_AIRFLOW_WWW_USER_USERNAME** : nom d'utilisateur pour le compte administrateur d'Airflow, à utiliser pour se connecter à l’interface web.
 - **_AIRFLOW_WWW_USER_PASSWORD** : mot de passe associé au compte précédent, à garder en lieu sûr.
 - **AIRFLOW_WORKSPACE** : dossier sur la machine hôte contenant les dossiers  `dags`, `plugins` et `logs` qui sera monté dans le container Airflow. Pour Trackdéchets, c'est le chemin vers le repository `trackdechets-airflow-workspace`.
+- **AIRFLOW_PORT** : Port sur lequel écoute l'interface Airflow.
 - **FERNET_KEY** : Clé Fernet à générer et qui sera utilisé pour chiffrer les variables et connexions Airflow.
 - **KEYS_FOLDER** : Dossier sur la machine hôte où seront placés les clés SSH, clés API... nécessaires au DAG, le dossier est monté dans `/opt/keys` dans le container.
 - **WEBSERVER_PORT** : Port sur lequel sera exposé l'interface web d'Airflow, 8080 par défaut.
-
+- **MELTANO_WORKSPACE** :  dossier sur la machine hôte contenant les fichiers `meltano.yml` et `.env` qui sera monté dans le container Airflow. Pour Trackdéchets, c'est le chemin vers le repository `trackdechets-meltano-workspace`.
+- **MELTANO_IMAGE_NAME** : Nom du container meltano.
+- **MELTANO_ENV** : Environnement Meltano à utiliser.
 
 ## Configuration nginx pour la production
 
