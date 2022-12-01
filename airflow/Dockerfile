@@ -7,7 +7,8 @@ RUN apt-get update \
     build-essential \
     libpq-dev \
     nodejs \
-    git
+    git \
+    npm
 
 
 USER airflow
