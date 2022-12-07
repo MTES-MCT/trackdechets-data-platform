@@ -6,10 +6,9 @@ RUN apt-get update \
     gcc \
     build-essential \
     libpq-dev \
-    nodejs \
-    git \
-    npm
-
+    git
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
+    apt-get install -y nodejs
 
 USER airflow
 
