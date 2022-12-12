@@ -304,12 +304,13 @@ services:
     environment:
       <<: *meltano-env
     volumes:
-      - meltano-project-root:/project
       - meltano-elt-logs-data:/project/.meltano/logs/elt
       - ${MELTANO_WORKSPACE}/:/project/
     expose:
       - 5000
       - 22
+    ports:
+      - "9991:8080"
     depends_on:
       - postgres
     networks:
