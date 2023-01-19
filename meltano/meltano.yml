@@ -1,6 +1,0 @@
-version: 1
-default_environment: dev
-environments:
-  - name: dev
-  - name: prod
-project_id: 8a35e99a-f240-4ef5-96aa-b5687139b894
