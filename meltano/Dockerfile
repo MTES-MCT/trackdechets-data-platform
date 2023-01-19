@@ -27,6 +27,7 @@ RUN echo $MELTANO_ENV
 RUN echo "source /venv/bin/activate" >> ~/.bashrc
 RUN echo "export MELTANO_ENVIRONMENT=$MELTANO_ENV" >> ~/.bashrc
 RUN echo "export MELTANO_DATABASE_URI=$MELTANO_DATABASE_URI" >> ~/.bashrc
+RUN echo "export NO_COLOR=1" >> ~/.bashrc
 
 RUN touch .env
 

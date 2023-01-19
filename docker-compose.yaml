@@ -93,6 +93,7 @@ x-meltano-env:
   &meltano-env
   MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
   MELTANO_ENVIRONMENT: ${MELTANO_ENV}
+  NO_COLOR: 1
   # Add any additional Meltano configuration environment variables here
 
 services:
