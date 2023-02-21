@@ -1,4 +1,4 @@
-ARG MELTANO_IMAGE=meltano/meltano:v2.14-python3.10
+ARG MELTANO_IMAGE=meltano/meltano:v2.15.2-python3.10
 
 FROM $MELTANO_IMAGE
 
@@ -7,11 +7,12 @@ ARG MELTANO_ENV
 
 WORKDIR /project
 
+RUN apt update && apt install openssh-server postgresql libpq-dev sudo -y
+
 # Install any additional requirements
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
-RUN apt update && apt install openssh-server postgresql libpq-dev sudo -y
 
 RUN echo 'root:ubuntu' | chpasswd
 
