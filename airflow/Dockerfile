@@ -7,7 +7,7 @@ RUN apt-get update \
     build-essential \
     libpq-dev \
     git
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&\
     apt-get install -y nodejs
 
 USER airflow
