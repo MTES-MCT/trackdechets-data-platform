@@ -1,7 +1,7 @@
 # Modèle de déploiement pour la Plateforme Données de Trackdéchets
 
 Ce repository contient les fichiers `Docker Compose` permettant un déploiement de Airflow et Meltano.
-Le déploiement en production utilise `nginx` comme proxy inversé permettant d'activer le HTTPS viaz un certificat auto-généré via `certbot`.
+Le déploiement en production utilise `nginx` comme proxy inversé permettant d'activer le HTTPS via un certificat auto-généré avec `certbot`.
 
 
 Les fichiers présents ici permettent aussi de lancer l'instance Airflow en local. Dans ce cas il n'est pas nécessaire de lancer `nginx`.
