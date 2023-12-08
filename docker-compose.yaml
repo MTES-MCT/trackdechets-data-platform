@@ -64,7 +64,10 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     MELTANO_PROJECT_ROOT: "/opt/meltano"
     AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 240
-
+    AIRFLOW__METRICS__STATSD_ON: 'true'
+    AIRFLOW__METRICS__STATSD_PORT: 8125
+    AIRFLOW__METRICS__STATSD_PREFIX: "airflow"
+    AIRFLOW__METRICS__STATSD_HOST: "datadog"
   volumes:
     - ${AIRFLOW_WORKSPACE}/dags:/opt/airflow/dags
     - ${AIRFLOW_WORKSPACE}/logs:/opt/airflow/logs
@@ -319,6 +322,21 @@ services:
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  datadog-agent:
+    image: datadog/agent:latest
+    ports:
+      - "8125:8125/udp"
+    env_file:
+      - .env
+    networks:
+      - airflow
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - ${AIRFLOW_WORKSPACE}/logs:/tmp/airflow/logs:ro
+      - ./airflow/datadog/conf.yaml:/conf.d/airflow.d/conf.yaml
 
 networks:
   meltano:
