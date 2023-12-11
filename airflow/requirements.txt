@@ -7,3 +7,4 @@ apache-airflow-providers-ssh==3.4.0
 psycopg2
 pynsee[full]
 statsd
+datadog
