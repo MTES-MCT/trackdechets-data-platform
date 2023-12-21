@@ -1,0 +1,9 @@
+logs:
+  - type: file
+    path: "/var/log/airflow/dag_id=*/run_id=*/task_id=*/attempt=*.log"
+    source: airflow
+    service: airflow
+    log_processing_rules:
+      - type: multi_line
+        name: new_log_start_with_date
+        pattern: \[\d{4}\-\d{2}\-\d{2}
