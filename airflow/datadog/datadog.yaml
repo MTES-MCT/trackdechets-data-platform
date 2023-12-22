@@ -6,7 +6,7 @@ jmx_use_container_support: true
 
 logs_config:
   file_wildcard_selection_mode: by_modification_time
-  open_files_limit: 50
+  open_files_limit: 200
 
 dogstatsd_mapper_profiles:
   - name: airflow
