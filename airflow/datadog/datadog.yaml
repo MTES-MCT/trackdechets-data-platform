@@ -4,9 +4,9 @@ apm_config:
 # Use java container support
 jmx_use_container_support: true
 
-file_wildcard_selection_mode: by_modification_time
-
-open_files_limit: 50
+logs_config:
+  file_wildcard_selection_mode: by_modification_time
+  open_files_limit: 50
 
 dogstatsd_mapper_profiles:
   - name: airflow
