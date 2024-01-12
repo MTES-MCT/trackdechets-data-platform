@@ -8,3 +8,4 @@ psycopg2
 pynsee[full]
 statsd
 datadog
+black

@@ -1,4 +1,4 @@
-FROM apache/airflow:2.5.3-python3.10 as baseairflow
+FROM apache/airflow:2.8.0-python3.10 as baseairflow
 
 ARG DEBIAN_FRONTEND=noninteractive
 
