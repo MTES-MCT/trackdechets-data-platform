@@ -330,26 +330,26 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  datadog-agent:
-    image: datadog/agent:7.49.1
-    ports:
-      - "8125:8125/udp"
-    labels:
-      com.datadoghq.ad.checks: '{"airflow": {"instances": {"url": "http://%%host%%:8080"}}}'
-    env_file:
-      - .env
-    environment:
-      DD_LOGS_ENABLED: 'true'
-    networks:
-      - airflow
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /proc/:/host/proc/:ro
-      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
-      - ${AIRFLOW_WORKSPACE}/logs:/var/log/airflow
-      - ./airflow/datadog/conf.yaml:/conf.d/airflow.d/conf.yaml
-      - ./airflow/datadog/datadog.yaml:/etc/datadog-agent/datadog.yaml
+  # datadog-agent:
+  #   image: datadog/agent:7.49.1
+  #   ports:
+  #     - "8125:8125/udp"
+  #   labels:
+  #     com.datadoghq.ad.checks: '{"airflow": {"instances": {"url": "http://%%host%%:8080"}}}'
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     DD_LOGS_ENABLED: 'true'
+  #   networks:
+  #     - airflow
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #     - /proc/:/host/proc/:ro
+  #     - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+  #     - ${AIRFLOW_WORKSPACE}/logs:/var/log/airflow
+  #     - ./airflow/datadog/conf.yaml:/conf.d/airflow.d/conf.yaml
+  #     - ./airflow/datadog/datadog.yaml:/etc/datadog-agent/datadog.yaml
 
 networks:
   meltano:
