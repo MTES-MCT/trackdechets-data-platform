@@ -9,3 +9,4 @@ pynsee[full]
 statsd
 datadog
 black
+peewee==3.17.1
