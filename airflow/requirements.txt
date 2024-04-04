@@ -5,7 +5,7 @@ google-auth-oauthlib==0.5.1
 tqdm==4.64.1
 apache-airflow-providers-ssh==3.4.0
 psycopg2
-pynsee[full] @ git+https://github.com/InseeFrLab/pynsee.git@cfd106dd28ed9affd90fe7402c5ef75a88059c03
+pynsee[full] @ git+https://github.com/InseeFrLab/pynsee.git@5cc943d1d68ff93be9d557932cdbb302eb4584e9
 statsd
 datadog
 black
