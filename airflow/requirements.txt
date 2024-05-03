@@ -2,7 +2,7 @@ pygsheets==2.0.5
 google-api-python-client==1.12.11
 google-auth-httplib2==0.1.0
 google-auth-oauthlib==0.5.1
-tqdm==4.64.1
+tqdm==4.66.3
 apache-airflow-providers-ssh==3.4.0
 psycopg2
 pynsee[full] @ git+https://github.com/InseeFrLab/pynsee.git@5cc943d1d68ff93be9d557932cdbb302eb4584e9
