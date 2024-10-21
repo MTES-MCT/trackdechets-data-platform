@@ -10,3 +10,5 @@ statsd
 datadog
 black
 peewee==3.17.1
+httpx==0.27.2
+Authlib==1.3.0
