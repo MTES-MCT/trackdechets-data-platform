@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load configuration
-CONFIG_FILE="/opt/configs/ssh_tunnels.conf"
+CONFIG_FILE="/opt/trackdechets-data-platform/ssh_tunnels.conf"
 
 if [ ! -f $CONFIG_FILE ]; then
     echo "Configuration file $CONFIG_FILE not found. Exiting."
