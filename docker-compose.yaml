@@ -48,8 +48,7 @@ x-airflow-common:
   &airflow-common
   build:
     context: ./airflow
-  environment:
-    &airflow-common-env
+  environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres/airflow
     # For backward compatibility, with Airflow <2.3
@@ -75,6 +74,7 @@ x-airflow-common:
     # AIRFLOW__METRICS__STATSD_DATADOG_ENABLED: 'true'
     AIRFLOW__SCHEDULER__SCHEDULER_HEALTH_CHECK_THRESHOLD: 300
     AIRFLOW__SCHEDULER__SCHEDULER_ZOMBIE_TASK_THRESHOLD: 600
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
   volumes:
     - ${AIRFLOW_WORKSPACE}/dags:/opt/airflow/dags
     - ${AIRFLOW_WORKSPACE}/logs:/opt/airflow/logs
@@ -82,8 +82,7 @@ x-airflow-common:
     - ${MELTANO_WORKSPACE}/output:/opt/www
     - ${KEYS_FOLDER}:/opt/keys
   user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    &airflow-common-depends-on
+  depends_on: &airflow-common-depends-on
     redis:
       condition: service_healthy
     postgres:
@@ -91,8 +90,7 @@ x-airflow-common:
   networks:
     - airflow
 
-x-meltano-image:
-  &meltano-image
+x-meltano-image: &meltano-image
   build:
     dockerfile: ../meltano/Dockerfile
     context: ./meltano
@@ -100,8 +98,7 @@ x-meltano-image:
       MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
       MELTANO_ENV: ${MELTANO_ENV}
 
-x-meltano-env:
-  &meltano-env
+x-meltano-env: &meltano-env
   MELTANO_DATABASE_URI: "postgresql://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@postgres:5432/meltano"
   MELTANO_ENVIRONMENT: ${MELTANO_ENV}
   NO_COLOR: 1
@@ -111,7 +108,6 @@ services:
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_MULTIPLE_DATABASES: airflow,meltano
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: airflow
@@ -121,9 +117,10 @@ services:
       - ./postgres-init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
-      interval: 5s
+      interval: 10s
       retries: 5
-    restart: always
+      start_period: 5s
+    restart: unless-stopped
     networks:
       - airflow
 
@@ -133,10 +130,11 @@ services:
       - 6379
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
+      interval: 10s
       timeout: 30s
       retries: 50
-    restart: always
+      start_period: 30s
+    restart: unless-stopped
     networks:
       - airflow
 
@@ -156,7 +154,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -166,15 +164,12 @@ services:
     <<: *airflow-common
     command: scheduler
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"'
-        ]
-      interval: 10s
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
       timeout: 10s
       retries: 5
-    restart: always
+      start_period: 30s
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -186,8 +181,8 @@ services:
     healthcheck:
       test:
         - "CMD-SHELL"
-        - 'celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
-      interval: 10s
+        - 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
+      interval: 30s
       timeout: 10s
       retries: 5
     environment:
@@ -195,7 +190,7 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -212,10 +207,11 @@ services:
           "CMD-SHELL",
           'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"'
         ]
-      interval: 10s
+      interval: 30s
       timeout: 10s
       retries: 5
-    restart: always
+      start_period: 30s
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -228,27 +224,13 @@ services:
     command:
       - -c
       - |
-        function ver() {
-          printf "%04d%04d%04d%04d" $${1//./ }
-        }
-        airflow_version=$$(gosu airflow airflow version)
-        airflow_version_comparable=$$(ver $${airflow_version})
-        min_airflow_version=2.2.0
-        min_airflow_version_comparable=$$(ver $${min_airflow_version})
-        if (( airflow_version_comparable < min_airflow_version_comparable )); then
-          echo
-          echo -e "\033[1;31mERROR!!!: Too old Airflow version $${airflow_version}!\e[0m"
-          echo "The minimum Airflow version supported: $${min_airflow_version}. Only use this or higher!"
-          echo
-          exit 1
-        fi
         if [[ -z "${AIRFLOW_UID}" ]]; then
           echo
           echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
           echo "If you are on Linux, you SHOULD follow the instructions below to set "
           echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
           echo "For other operating systems you can get rid of the warning with manually created .env file:"
-          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html#setting-the-right-airflow-user"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
           echo
         fi
         one_meg=1048576
@@ -281,7 +263,7 @@ services:
           echo
           echo -e "\033[1;33mWARNING!!!: You have not enough resources to run Airflow (see above)!\e[0m"
           echo "Please follow the instructions to increase amount of resources available:"
-          echo "   https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html#before-you-begin"
+          echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
@@ -296,6 +278,8 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
+    depends_on:
+      - postgres
 
   airflow-cli:
     <<: *airflow-common
@@ -316,6 +300,7 @@ services:
       <<: *meltano-env
     volumes:
       - ${MELTANO_WORKSPACE}/:/project/
+      - ${KEYS_FOLDER}:/opt/keys
     expose:
       - 5000
       - 22
@@ -330,26 +315,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # datadog-agent:
-  #   image: datadog/agent:7.49.1
-  #   ports:
-  #     - "8125:8125/udp"
-  #   labels:
-  #     com.datadoghq.ad.checks: '{"airflow": {"instances": {"url": "http://%%host%%:8080"}}}'
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     DD_LOGS_ENABLED: 'true'
-  #   networks:
-  #     - airflow
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
-  #     - /proc/:/host/proc/:ro
-  #     - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
-  #     - ${AIRFLOW_WORKSPACE}/logs:/var/log/airflow
-  #     - ./airflow/datadog/conf.yaml:/conf.d/airflow.d/conf.yaml
-  #     - ./airflow/datadog/datadog.yaml:/etc/datadog-agent/datadog.yaml
 
 networks:
   meltano:

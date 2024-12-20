@@ -1,4 +1,4 @@
-FROM apache/airflow:2.8.0-python3.10 as baseairflow
+FROM apache/airflow:2.10.4-python3.10 as baseairflow
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -23,7 +23,7 @@ ENV NODE_MAJOR=18
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 
 RUN apt-get update
-RUN command apt-get install nodejs npm -y
+RUN command apt-get install nodejs -y
 
 USER airflow
 

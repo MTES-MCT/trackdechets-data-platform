@@ -1,0 +1,2 @@
+CREATE DATABASE meltano;
+GRANT ALL PRIVILEGES ON DATABASE meltano TO airflow;
